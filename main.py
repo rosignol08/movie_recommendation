@@ -12,7 +12,7 @@ def json_to_dic(json_file):
     movie_dict = {movie['Title']: movie['Plot'] for movie in data}
     return movie_dict
 
-#print(json_to_dic('film.json'))
+mon_dico = json_to_dic('film.json')
 
 nltk.download('punkt')
 nltk.download('wordnet')
@@ -49,5 +49,45 @@ def nlp(sentence):
     return filtered_tokens
 
 
-sentence = "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency"
-print(nlp(sentence))
+#sentence = "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency"
+#print(nlp(sentence))
+def jaccard_similarity(tokens1, tokens2):
+    set1 = set(tokens1)
+    set2 = set(tokens2)
+    intersection = set1.intersection(set2)
+    union = set1.union(set2)
+    return len(intersection) / len(union) if len(union) > 0 else 0.0
+
+def jaccard_similarity_from_title(title1, title2, movie_dict):
+    if title1 not in movie_dict or title2 not in movie_dict:
+        print("One or both titles not found in the movie dictionary.")
+        return
+    
+    tokens1 = nlp(movie_dict[title1])
+    tokens2 = nlp(movie_dict[title2])
+    similarity_score = jaccard_similarity(tokens1, tokens2)
+    
+    print(f"Le Score de similarité de Jaccard des films `{title1}` et `{title2}` est {similarity_score}")
+
+#jaccard_similarity_from_title("The Godfather", "The Godfather: Part II", mon_dico)
+print("quelle doit-être la taille des vecteurs représentant chaque document de notre corpus ?\n")
+print("Correspond au nombre total de termes unique sans l'ensemble des résumés des films")
+print("\n")
+print("Cette valeur peut-elle être obtenue en aditionnant toutes les longueurs des valeurs du dictionnaire obtenu à l'étape 3 du I ?")
+print("Non, cette valeur ne peut pas être obtenue en additionnant toutes les longueurs des valeurs du dictionnaire.")
+print("Parce que certains termes peuvent apparaître dans plusieurs résumés.")
+print("\n")
+
+def tf(token,document):
+    #ça fait nb_occurences_token/nb_total_token
+    nb_occurences_token = document.count(token)
+    nb_total_token = len(document)
+    resultat = nb_occurences_token / nb_total_token if nb_total_token > 0 else 0
+    return resultat
+
+'''fonction IDF qui prend en argument 
+un dictionnaire (clé : titre, valeur : résumé) 
+et qui renvoie un dictionnaire dont les clés sont
+les tokens du vocabulairede l'ensemble du corpus, 
+et les valeurs sont le score idf pour chacun de ces tokens.'''
+def IDF(dictioanire)
