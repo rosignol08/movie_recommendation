@@ -108,7 +108,8 @@ def IDF(dictionaire):
         idf_dict[token] = log10(nb_docs_du_corpus / nb_docs_contenant_token) if nb_docs_contenant_token > 0 else 0
 
     return idf_dict
-print(IDF(mon_dico))
+
+#print(IDF(mon_dico))
 print("\n")
 
 
@@ -128,5 +129,29 @@ def TFIDF(dictionaire,):
         tfidf_dict[title] = tfidf_vector
     return tfidf_dict
 
-dico_cles = TFIDF(mon_dico)
-print(dico_cles)
+#dico_cles = TFIDF(mon_dico)
+#print(dico_cles)
+
+def cosine_similarity(list1, list2):
+    dot = np.dot(list1, list2)
+    norm1 = np.linalg.norm(list1)
+    norm2 = np.linalg.norm(list2)
+    cos = dot / (norm1 * norm2)
+    return(cos)
+
+
+def recommend_Jaccard(title, movie_dict, n=3):
+    if title not in movie_dict:
+        print(f"Le film '{title}' n'est pas dans le dictionnaire.")
+        return []
+    target_tokens = nlp(movie_dict[title])
+    similarities = {}
+    
+    for other_title, plot in movie_dict.items():
+
+def recommend_TFIDF(title, movie_dict, n=3):
+    if title not in movie_dict:
+        print(f"Le film '{title}' n'est pas dans le dictionnaire.")
+        return []
+    
+    #ça trille les films par similarité décroissante et prendre les n premiers
