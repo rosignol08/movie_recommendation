@@ -3,6 +3,7 @@ import nltk
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
+from math import log10
 
 def json_to_dic(json_file):
     with open(json_file, 'r', encoding='utf-8') as file:
@@ -90,4 +91,42 @@ un dictionnaire (clé : titre, valeur : résumé)
 et qui renvoie un dictionnaire dont les clés sont
 les tokens du vocabulairede l'ensemble du corpus, 
 et les valeurs sont le score idf pour chacun de ces tokens.'''
-def IDF(dictioanire)
+
+def IDF(dictionaire):
+    #ça fait log10(nb_docs_du_corpus/nb_docs_contenant_token)
+    nb_docs_du_corpus = len(dictionaire)
+    idf_dict = {}
+    for title, plot in dictionaire.items():
+        tokens = nlp(plot)
+        unique_tokens = set(tokens)
+        for token in unique_tokens:
+            if token not in idf_dict:
+                idf_dict[token] = 0
+            idf_dict[token] += 1
+
+    for token, nb_docs_contenant_token in idf_dict.items():
+        idf_dict[token] = log10(nb_docs_du_corpus / nb_docs_contenant_token) if nb_docs_contenant_token > 0 else 0
+
+    return idf_dict
+print(IDF(mon_dico))
+print("\n")
+
+
+'''Implémentez une fonction TFIDF qui prend en argument
+le dictionnaire des films et qui renvoie un dictionnaire
+dont les clés sont le titre des films et les valeurs sont 
+le vecteur de coefficients TF-IDF correspondants à ce film.'''
+def TFIDF(dictionaire,):
+    #ça fait tf(token,document) * idf(token,corpus)
+    tfidf_dict = {}
+    idf_dict = IDF(dictionaire)
+    for title, plot in dictionaire.items():
+        tokens = nlp(plot)
+        tfidf_vector = {}
+        for token in set(tokens):
+            tfidf_vector[token] = tf(token, tokens) * idf_dict[token]
+        tfidf_dict[title] = tfidf_vector
+    return tfidf_dict
+
+dico_cles = TFIDF(mon_dico)
+print(dico_cles)
