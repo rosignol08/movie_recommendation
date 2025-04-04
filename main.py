@@ -4,6 +4,7 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
 from math import log10
+import numpy as np
 
 def json_to_dic(json_file):
     with open(json_file, 'r', encoding='utf-8') as file:
@@ -117,7 +118,7 @@ print("\n")
 le dictionnaire des films et qui renvoie un dictionnaire
 dont les clés sont le titre des films et les valeurs sont 
 le vecteur de coefficients TF-IDF correspondants à ce film.'''
-def TFIDF(dictionaire,):
+def TFIDF(dictionaire):
     #ça fait tf(token,document) * idf(token,corpus)
     tfidf_dict = {}
     idf_dict = IDF(dictionaire)
@@ -132,26 +133,62 @@ def TFIDF(dictionaire,):
 #dico_cles = TFIDF(mon_dico)
 #print(dico_cles)
 
-def cosine_similarity(list1, list2):
-    dot = np.dot(list1, list2)
-    norm1 = np.linalg.norm(list1)
-    norm2 = np.linalg.norm(list2)
-    cos = dot / (norm1 * norm2)
-    return(cos)
-
-
 def recommend_Jaccard(title, movie_dict, n=3):
     if title not in movie_dict:
         print(f"Le film '{title}' n'est pas dans le dictionnaire.")
         return []
     target_tokens = nlp(movie_dict[title])
     similarities = {}
-    
     for other_title, plot in movie_dict.items():
+        if other_title != title:
+            other_tokens = nlp(plot)
+            similarity = jaccard_similarity(target_tokens, other_tokens)
+            similarities[other_title] = similarity
+    sorted_movies = sorted(similarities.items(), key=lambda x: x[1], reverse=True)
+    
+    return {movie: similarity for movie, similarity in sorted_movies[:n]}
+
+def cosine_similarity(list1, list2):
+    #chat gpt
+    # Aligner les vecteurs en créant une union des clés et en remplissant les valeurs manquantes avec 0
+    max_length = max(len(list1), len(list2))
+    aligned_list1 = np.pad(list1, (0, max_length - len(list1)), 'constant')
+    aligned_list2 = np.pad(list2, (0, max_length - len(list2)), 'constant')
+    #fin chat gpt
+    dot = np.dot(aligned_list1, aligned_list2)
+    norm1 = np.linalg.norm(aligned_list1)
+    norm2 = np.linalg.norm(aligned_list2)
+    cos = dot / (norm1 * norm2) if norm1 > 0 and norm2 > 0 else 0
+    return cos
 
 def recommend_TFIDF(title, movie_dict, n=3):
     if title not in movie_dict:
         print(f"Le film '{title}' n'est pas dans le dictionnaire.")
         return []
+    tfidf_dict = TFIDF(movie_dict)
+    target_tokens = tfidf_dict[title]
+    target_vector = np.array(list(target_tokens.values()))
+    similarities = {}
+    for other_title, _ in movie_dict.items():
+        if other_title != title:
+            other_tokens = tfidf_dict[other_title]
+            other_vector = np.array(list(other_tokens.values()))
+            similarity = cosine_similarity(target_vector, other_vector)
+            similarities[other_title] = similarity
+    sorted_movies = sorted(similarities.items(), key=lambda x: x[1], reverse=True)
     
-    #ça trille les films par similarité décroissante et prendre les n premiers
+    return {movie: similarity for movie, similarity in sorted_movies[:n]}
+
+print("recommandation jaccard")
+film_title = "The Nightmare Before Christmas"
+recommandations = recommend_Jaccard(film_title, mon_dico)
+print(f"Films recommandés pour '{film_title}' (Jaccard):")
+print(recommandations)
+print("\n")
+print("recommandation tfidf")
+film_title = "The Nightmare Before Christmas"
+recommandations = recommend_TFIDF(film_title, mon_dico)
+print(f"Films recommandés pour '{film_title}' (TF-IDF):")
+#pour pas avoir np.float dans le dico
+recommandations = {movie: float(similarity) for movie, similarity in recommandations.items()}
+print(recommandations)
